@@ -1,0 +1,9 @@
+marquee {
+    color: lightgreen;
+    background-color: black;
+}
+
+/* Have sections hidden at beginning */
+section {
+    display: none;
+}

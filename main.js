@@ -2,7 +2,7 @@
 (()=>{ 
     "use strict"
 
-    // initialise global variable as a map to hold coins
+    // Initialise global variable as a map to hold coins
     let coins = new Map();
 
     // Load coins from localStorage and parse from JSON
@@ -11,24 +11,26 @@
     // If coins null or empty, get info from API
     if (coins === null || coins.size === 0) loadCoinsFromAPI();
 
-    displayCoins();
+    // Display all coins
+    displayCoins(coins.values());
 
-    // show home frame on load
+    // Show home frame on load
     document.getElementById("homeFrame").style.display="block";
 
     // Iterate over link objects to the frames - marked in HTML with class="frameLink"
     for (const aLink of document.getElementsByClassName("frameLink")) {
-        // for each link object add a click event with a function to show only that frame
+        // For each link object add a click event with a function to show only that frame
         aLink.addEventListener("click", function(){
-            // hide all frames
+            // Hide all frames
             for (const frame of document.getElementsByClassName("frame")) {
                 frame.style.display="none";
             }
-            // show the frame based on the link clicked (alink data-frame corresponds to section id)
+            // Show the frame based on the link clicked (alink data-frame corresponds to section id)
             document.getElementById(this.dataset.frame).style.display="block";
         });
     }
 
+    // Asynchronical function which loads the coin information from the CoinGecko API
     async function loadCoinsFromAPI() {
         try {
             // Fetch coins from API and load the coins array with the json
@@ -37,6 +39,7 @@
             // Save coins in localStorage as JSON
             localStorage.setItem("coinsJSON", JSON.stringify(coinsAPI));
 
+            // Saves the coin information retrieved from the API to the global coins map
             fillCoinsMap(coinsAPI);
 
         } catch (error) {
@@ -45,6 +48,7 @@
         }
     }
 
+    // Saves coin information to the global coin map, based on a JSON coins string
     function fillCoinsMap(coinsJSON) {
         // Iterate over  the coins in JSON form and add each one to map variable with the key being the coin id
         for (const coin of coinsJSON) {
@@ -52,24 +56,60 @@
         }
     }
 
-    function displayCoins() {
+    // Shows coins to the user
+    function displayCoins(coinsToShow) {
         // initialise html string as empty
-        let html = `<div class="grid">`;
+        let html = "";
 
-        // Iterate over the coins and each one as a card to the html
-        for (const coin of coins.values()) {
+        // Iterate over the coins and each one to the html
+        for (const coin of coinsToShow) {
             html += `<div class="card">
             <span>${coin.name}</span><br>
             <span>${coin.symbol}</span><br>
             <img src="${coin.image.small}" alt="Image of ${coin.name}"><br>
-            <button id="${coin.id}">More Info</button>
+            <button data-coinid="${coin.id}" class="moreInfoBtn">More Info</button>
+            <span></span>
             </div>`
         }
 
-        html += "</div>"
-
         // Update display of coins on home section
         document.getElementById("homeFrame").innerHTML = html;
+
+        // Iterate over more info button objects - marked in HTML with class="moreInfoBtn"
+        for (const btn of document.getElementsByClassName("moreInfoBtn")) {
+            // for each btn object add a click event with toggleInfo function
+            btn.addEventListener("click", toggleInfo);
+        }
+    }
+
+    // Displays or collapses extra information (coin price in different currencies) for the coin clicked
+    function toggleInfo() {
+        // Initialise extraInfo as empty
+        let extraInfo = "";
+
+        // Checking which situation we are in:
+        // if text says "More Info", we want to display the extra info
+        if(this.innerHTML === "More Info") {
+            // Update text shown to opposite
+            this.innerHTML = "Hide Info";
+            
+            // For ease of code create variable saving the coins prices in different currencies (an object)
+            // The global coins map is accessed via the coin id we had saved in the dataset when building the html
+            let coinPrice = coins.get(this.dataset.coinid).market_data.current_price;
+            // Set extraInfo as coin price in USD, Euro, and Shekels (per specification request)
+            extraInfo = `$${coinPrice.usd}<br>
+            €${coinPrice.eur}<br>
+            ₪${coinPrice.ils}`
+            
+        }
+        // if text says "Hide Info", we want to collapse it (setting the text as empty which is the init, so no need to change in else cause)
+        else {
+            // Update text shown to opposite
+            this.innerHTML = "More Info";
+        }
+
+        // Set the span element below the button clicked with the extraInfo (either coin prices or empty string, depending if we are displaying or collapsing)
+        this.nextElementSibling.innerHTML = extraInfo;
     }
 
 })()

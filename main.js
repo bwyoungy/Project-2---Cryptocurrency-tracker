@@ -27,11 +27,11 @@
 
     // Load coins on page, from API or localstorage
     function loadCoinsOnPage() {
-        // Load coins from localStorage and parse from JSON
-        fillCoinsMap(JSON.parse(localStorage.getItem("coinsJSON")));
-
         // If coins null or empty, get info from API
         if (coins === null || coins.size === 0) loadCoinsFromAPI();
+
+        // Load coins from localStorage and parse from JSON
+        fillCoinsMap(JSON.parse(localStorage.getItem("coinsJSON")));
 
         // Display all coins
         displayCoins(coins.values());
@@ -42,12 +42,9 @@
         try {
             // Fetch coins from API and load the coins array with the json
             const response = await fetch("https://api.coingecko.com/api/v3/coins/");
-            coinsAPI = await response.json();
+            const coinsAPI = await response.json();
             // Save coins in localStorage as JSON
             localStorage.setItem("coinsJSON", JSON.stringify(coinsAPI));
-
-            // Saves the coin information retrieved from the API to the global coins map
-            fillCoinsMap(coinsAPI);
 
         } catch (error) {
             // Alert user there was a problem retrieving the information

@@ -12,3 +12,15 @@ img {
     height: 50px;
     width: 50px;
 }
+
+/* Display coins using grid, limiting to 5 per row */
+#homeFrame {
+    display: grid;
+    grid-template-columns: 20% 20% 20% 20% 20%;
+    gap: 10px;
+    padding: 0 3%;
+}
+
+.coinCard {
+    border: solid black 1px;
+}

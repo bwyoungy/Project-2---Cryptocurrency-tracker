@@ -10,7 +10,7 @@
     document.getElementById("searchBox").addEventListener("keyup", searchCoins);
 
     // Show home frame on load
-    document.getElementById("homeFrame").style.display="block";
+    document.getElementById("homeFrame").style.display="grid";
 
     // Iterate over link objects to the frames - marked in HTML with class="frameLink"
     for (const aLink of document.getElementsByClassName("frameLink")) {
@@ -21,7 +21,7 @@
                 frame.style.display="none";
             }
             // Show the frame based on the link clicked (alink data-frame corresponds to section id)
-            document.getElementById(this.dataset.frame).style.display="block";
+            document.getElementById(this.dataset.frame).style.display="grid";
         });
     }
 
@@ -67,17 +67,25 @@
 
         // Iterate over the coins and each one to the html
         for (const coin of coinsToShow) {
-            html += `<div class="card">
-            <span>${coin.name}</span><br>
-            <span>Symbol: ${coin.symbol}</span><br>
-            <img src="${coin.image.small}" alt="Image of ${coin.name}"><br>
-            <span></span>
-            <button data-coinid="${coin.id}" class="moreInfoBtn">More Info</button>
+            html += `
+            <div class="coinCard">
+                <span class="glyphicon glyphicon-star"></span>
+                <span>${coin.name}</span><br>
+                <span>Symbol: ${coin.symbol}</span><br>
+                <img src="${coin.image.small}" alt="Image of ${coin.name}"><br>
+                <span></span>
+                <button data-coinid="${coin.id}" class="moreInfoBtn">More Info</button>
             </div>`
         }
 
         // Update display of coins on home section
         document.getElementById("homeFrame").innerHTML = html;
+
+        // Iterate over glyphicon star objects
+        for (const star of document.getElementsByClassName("glyphicon-star")) {
+            // for each star object add a click event with favouriteCoin function
+            star.addEventListener("click", favouriteCoin);
+        }
 
         // Iterate over more info button objects - marked in HTML with class="moreInfoBtn"
         for (const btn of document.getElementsByClassName("moreInfoBtn")) {
@@ -104,7 +112,7 @@
             extraInfo = `Market value of coin:<br>
             $${coinPrice.usd}<br>
             €${coinPrice.eur}<br>
-            ₪${coinPrice.ils}`
+            ₪${coinPrice.ils}<br>`
             
         }
         // if text says "Hide Info", we want to collapse it (setting the text as empty which is the init, so no need to change in else cause)
@@ -134,6 +142,10 @@
             displayCoins(filteredCoins.values());
         }
 
+    }
+
+    function favouriteCoin() {
+        
     }
 
 })()

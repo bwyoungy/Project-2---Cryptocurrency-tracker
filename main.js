@@ -4,15 +4,7 @@
 
     // Initialise global variable as a map to hold coins
     let coins = new Map();
-
-    // Load coins from localStorage and parse from JSON
-    fillCoinsMap(JSON.parse(localStorage.getItem("coinsJSON")));
-
-    // If coins null or empty, get info from API
-    if (coins === null || coins.size === 0) loadCoinsFromAPI();
-
-    // Display all coins
-    displayCoins(coins.values());
+    loadCoinsOnPage();
 
     // Add search event to searchbox
     document.getElementById("searchBox").addEventListener("keyup", searchCoins);
@@ -31,6 +23,18 @@
             // Show the frame based on the link clicked (alink data-frame corresponds to section id)
             document.getElementById(this.dataset.frame).style.display="block";
         });
+    }
+
+    // Load coins on page, from API or localstorage
+    function loadCoinsOnPage() {
+        // Load coins from localStorage and parse from JSON
+        fillCoinsMap(JSON.parse(localStorage.getItem("coinsJSON")));
+
+        // If coins null or empty, get info from API
+        if (coins === null || coins.size === 0) loadCoinsFromAPI();
+
+        // Display all coins
+        displayCoins(coins.values());
     }
 
     // Asynchronical function which loads the coin information from the CoinGecko API
@@ -68,10 +72,10 @@
         for (const coin of coinsToShow) {
             html += `<div class="card">
             <span>${coin.name}</span><br>
-            <span>${coin.symbol}</span><br>
+            <span>Symbol: ${coin.symbol}</span><br>
             <img src="${coin.image.small}" alt="Image of ${coin.name}"><br>
-            <button data-coinid="${coin.id}" class="moreInfoBtn">More Info</button>
             <span></span>
+            <button data-coinid="${coin.id}" class="moreInfoBtn">More Info</button>
             </div>`
         }
 
@@ -100,7 +104,8 @@
             // The global coins map is accessed via the coin id we had saved in the dataset when building the html
             let coinPrice = coins.get(this.dataset.coinid).market_data.current_price;
             // Set extraInfo as coin price in USD, Euro, and Shekels (per specification request)
-            extraInfo = `$${coinPrice.usd}<br>
+            extraInfo = `Market value of coin:<br>
+            $${coinPrice.usd}<br>
             €${coinPrice.eur}<br>
             ₪${coinPrice.ils}`
             
@@ -111,8 +116,8 @@
             this.innerHTML = "More Info";
         }
 
-        // Set the span element below the button clicked with the extraInfo (either coin prices or empty string, depending if we are displaying or collapsing)
-        this.nextElementSibling.innerHTML = extraInfo;
+        // Set the span element above the button clicked with the extraInfo (either coin prices or empty string, depending if we are displaying or collapsing)
+        this.previousElementSibling.innerHTML = extraInfo;
     }
 
     // Search for coins based on user's input in the searchBox

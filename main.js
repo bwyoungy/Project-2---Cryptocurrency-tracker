@@ -14,6 +14,9 @@
     // Display all coins
     displayCoins(coins.values());
 
+    // Add search event to searchbox
+    document.getElementById("searchBox").addEventListener("keyup", searchCoins);
+
     // Show home frame on load
     document.getElementById("homeFrame").style.display="block";
 
@@ -110,6 +113,25 @@
 
         // Set the span element below the button clicked with the extraInfo (either coin prices or empty string, depending if we are displaying or collapsing)
         this.nextElementSibling.innerHTML = extraInfo;
+    }
+
+    // Search for coins based on user's input in the searchBox
+    function searchCoins() {
+        // Save searchTerm from searchBox and convert to lowerCase to increase compatibility
+        let searchTerm = document.getElementById("searchBox").value.toLowerCase();
+
+        // If search term is empty, display all coins
+        if (searchTerm === "") displayCoins(coins.values());
+        // Otherwise filter by search term, creating new map from filtered array checking if the symbol contains the search term (per specification request)
+        else {
+            const filteredCoins = new Map(Array.from(coins).filter(([key,value]) => {
+                if (value.symbol.includes(searchTerm)) return true;
+                return false;
+            }));
+            // Display only filtered coins to user
+            displayCoins(filteredCoins.values());
+        }
+
     }
 
 })()

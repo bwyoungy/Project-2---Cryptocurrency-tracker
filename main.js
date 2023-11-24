@@ -4,13 +4,19 @@
 
     // Initialise global variable as a map to hold coins
     let coins = new Map();
+    let faveCoins = [];
+
+    // Save variables of objects from DOM used a few times to lower times DOM is accessed
+    const homeFrameObj = document.getElementById("homeFrame");
+
     loadCoinsOnPage();
+
 
     // Add search event to searchbox
     document.getElementById("searchBox").addEventListener("keyup", searchCoins);
 
     // Show home frame on load
-    document.getElementById("homeFrame").style.display="grid";
+    homeFrameObj.style.display="grid";
 
     // Iterate over link objects to the frames - marked in HTML with class="frameLink"
     for (const aLink of document.getElementsByClassName("frameLink")) {
@@ -34,7 +40,7 @@
         fillCoinsMap(JSON.parse(localStorage.getItem("coinsJSON")));
 
         // Display all coins
-        displayCoins(coins.values());
+        displayCoins(coins.values(), homeFrameObj);
     }
 
     // Asynchronical function which loads the coin information from the CoinGecko API
@@ -61,37 +67,49 @@
     }
 
     // Shows coins to the user
-    function displayCoins(coinsToShow) {
+    // param objToDisplay: The object on which to print the coins
+    function displayCoins(coinsToShow, objToDisplay) {
         // initialise html string as empty
         let html = "";
 
         // Iterate over the coins and each one to the html
         for (const coin of coinsToShow) {
-            html += `
-            <div class="coinCard">
-                <span class="glyphicon glyphicon-star"></span>
-                <span>${coin.name}</span><br>
-                <span>Symbol: ${coin.symbol}</span><br>
-                <img src="${coin.image.small}" alt="Image of ${coin.name}"><br>
-                <span></span>
-                <button data-coinid="${coin.id}" class="moreInfoBtn">More Info</button>
-            </div>`
+            html += createCoinCard(coin);
         }
 
-        // Update display of coins on home section
-        document.getElementById("homeFrame").innerHTML = html;
+        // Update display of coins on object passed in parameter
+        objToDisplay.innerHTML = html;
 
         // Iterate over glyphicon star objects
         for (const star of document.getElementsByClassName("glyphicon-star")) {
-            // for each star object add a click event with favouriteCoin function
+            // For each star object add a click event with favouriteCoin function
             star.addEventListener("click", favouriteCoin);
+
+            // Check if coin is favourited and colour accordingly
+            if (faveCoins.includes(star.parentElement.dataset.coinid))
+                star.style.color = "gold";
         }
 
         // Iterate over more info button objects - marked in HTML with class="moreInfoBtn"
         for (const btn of document.getElementsByClassName("moreInfoBtn")) {
-            // for each btn object add a click event with toggleInfo function
+            // For each btn object add a click event with toggleInfo function
             btn.addEventListener("click", toggleInfo);
         }
+    }
+
+    // Create a coin card based on coin argument
+    function createCoinCard(coin) {
+        const coinCard = `
+        <div class="coinCard" data-coinid="${coin.id}">
+            <span class="glyphicon glyphicon-star"></span>
+            <span>${coin.name}</span><br>
+            <span>Symbol: ${coin.symbol}</span><br>
+            <img src="${coin.image.small}" alt="Image of ${coin.name}"><br>
+            <span></span>
+            <button class="moreInfoBtn">More Info</button>
+        </div>`;
+
+        return coinCard;
     }
 
     // Displays or collapses extra information (coin price in different currencies) for the coin clicked
@@ -106,8 +124,8 @@
             this.innerHTML = "Hide Info";
             
             // For ease of code create variable saving the coins prices in different currencies (an object)
-            // The global coins map is accessed via the coin id we had saved in the dataset when building the html
-            let coinPrice = coins.get(this.dataset.coinid).market_data.current_price;
+            // The global coins map is accessed via the coin id we had saved in the dataset of the parent element when building the html
+            let coinPrice = coins.get(this.parentElement.dataset.coinid).market_data.current_price;
             // Set extraInfo as coin price in USD, Euro, and Shekels (per specification request)
             extraInfo = `Market value of coin:<br>
             $${coinPrice.usd}<br>
@@ -131,7 +149,7 @@
         let searchTerm = document.getElementById("searchBox").value.toLowerCase();
 
         // If search term is empty, display all coins
-        if (searchTerm === "") displayCoins(coins.values());
+        if (searchTerm === "") displayCoins(coins.values(), homeFrameObj);
         // Otherwise filter by search term, creating new map from filtered array checking if the symbol contains the search term (per specification request)
         else {
             const filteredCoins = new Map(Array.from(coins).filter(([key,value]) => {
@@ -139,13 +157,88 @@
                 return false;
             }));
             // Display only filtered coins to user
-            displayCoins(filteredCoins.values());
+            displayCoins(filteredCoins.values(), homeFrameObj);
         }
 
     }
 
+    // Adds coin to array of favourites
     function favouriteCoin() {
-        
+        // For ease of coin save coin id saved in the dataset of the parent element when building the html
+        let thisCoinID = this.parentElement.dataset.coinid;
+
+        // Check if star colour is gold (favourited) or not
+        if (this.style.color === "gold") {
+            // Check where we are clicking from
+            // If clicking from homeFrame - unfavouriting by choice
+            if (this.parentElement.parentElement.id === "homeFrame") {
+                // Change colour to none (not-favourited)
+                this.style.color = "";
+
+                // Delete coin id from faveCoins array using splice method
+                faveCoins.splice(faveCoins.indexOf(thisCoinID), 1);
+            }
+            // Otherwise clicking from modal - picking a coin to be replaced by 6th coin
+            else {
+                faveCoins.push(document.getElementById("modalCoinPicked").firstElementChild.dataset.coinid);
+                // Delete coin id from faveCoins array using splice method
+                // Coin ID gotten from parent element of star clicked
+                faveCoins.splice(faveCoins.indexOf(this.parentElement.dataset.coinid), 1);
+                
+                // Close modal
+                document.getElementById("replacementModal").style.display = "none";
+
+                // Display all coins again, otherwise will show old favourites not updated
+                displayCoins(coins.values(), homeFrameObj);
+            }
+        }
+        else {
+            // Check if there are five favourite coins yet
+            // If not proceed with adding
+            if (faveCoins.length < 5) {
+                // Change colour to gold (favourited)
+                this.style.color = "gold";
+
+                // Add coin id to faveCoins array
+                faveCoins.push(thisCoinID)
+            }
+            // otherwise offer replacing
+            else {
+                popUpCoinReplacement(thisCoinID)
+            }
+        }
+
+    }
+
+    // Pops up a modal in which user can choose coin to be replaced by 6th coin clicked or can cancel
+    function popUpCoinReplacement(thisCoinID) {
+        // Save modal object to variable so as not to need to access DOM every time
+        const replacementModal = document.getElementById("replacementModal");
+        // Show the modal
+        replacementModal.style.display = "block";
+        // Add click event to cancel button that will close the modal (sets display as none)
+        document.getElementById("closeModal").addEventListener("click", function(){
+            replacementModal.style.display = "none";
+        })
+        // Adds click event to window outside of modal to close modal when clicking outside (acts like cancel button)
+        window.addEventListener("click", function(event){
+            if (event.target == replacementModal) {
+                replacementModal.style.display = "none";
+            }
+        })
+
+        // Show the coin picked, by sending it as an array of 1 to displayCoins function,
+        // and sending modalCoinPicked element as the object to display on
+        displayCoins([coins.get(thisCoinID)], document.getElementById("modalCoinPicked"));
+
+        // Convert faveCoins (array of coin ids) to map to be able to send to displayCoins function
+        const faveCoinsMap = new Map(Array.from(coins).filter(([key,value]) => {
+            if (faveCoins.includes(value.id)) return true;
+            return false;
+        }));
+        // Show currentFavourite coins, by sending them as an array to displayCoins function,
+        // and sending modalFavouriteCoins element as the object to display on
+        displayCoins(faveCoinsMap.values(), document.getElementById("modalFavouriteCoins"));
     }
 
 })()

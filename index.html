@@ -10,21 +10,34 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- A marquee banner welcoming to the site -->
     <marquee direction="left" scrollamount="40">Welcome to the Cryptocurrency tracker!</marquee>
     
+    <!-- Links to navigate between sections of site -->
     <a href="javascript:void(0)" data-frame="homeFrame" class="frameLink">Home page</a>
     <a href="javascript:void(0)" data-frame="reportFrame" class="frameLink">Live report</a>
     <a href="javascript:void(0)" data-frame="aboutFrame" class="frameLink">About me</a>
 
+    <!-- Search box to filter coins -->
     <label for="searchBox">Search coin:</label>
     <input type="search" id="searchBox">
 
     <hr>
 
-    <div>
-        <section id="homeFrame" class="frame"></section>
-        <section id="reportFrame" class="frame">Report section</section>
-        <section id="aboutFrame" class="frame">About section</section>
+    <!-- The sections of the site  -->
+    <section id="homeFrame" class="frame"></section>
+    <section id="reportFrame" class="frame">Report section</section>
+    <section id="aboutFrame" class="frame">About section</section>
+
+    <!-- Modal for coin replacement -->
+    <div id="replacementModal" class="modal">
+        <div class="modal-content">
+            <p>You've already favourited 5 coins! The coin you've picked now is:</p>
+            <div id="modalCoinPicked"></div>
+            <p>Choose a coin to be replaced by this coin:</p>
+            <div id="modalFavouriteCoins"></div>
+            <button id="closeModal"><span class="glyphicon glyphicon-remove"></span> Cancel</button>
+        </div>
     </div>
 </body>
 </html>

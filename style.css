@@ -14,7 +14,7 @@ img {
 }
 
 /* Display coins using grid, limiting to 5 per row */
-#homeFrame {
+#homeFrame, #modalFavouriteCoins, #modalCoinPicked {
     display: grid;
     grid-template-columns: 20% 20% 20% 20% 20%;
     gap: 10px;
@@ -23,4 +23,22 @@ img {
 
 .coinCard {
     border: solid black 1px;
+}
+
+.modal {
+    /* Hide modal by default */
+    display: none;
+    position: fixed;
+    /* Layer on top */
+    z-index: 1;
+    /* Set position of modal */
+    padding-top: 10%;
+    padding-left: 20%;
+    /* Set background colour as black with opacity (mostly hiding bottom window) */
+    background-color: rgba(0,0,0,0.9);
+}
+
+.modal-content {
+    background-color: white;
+    width: 80%;
 }

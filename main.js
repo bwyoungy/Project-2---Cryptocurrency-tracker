@@ -12,8 +12,9 @@
     loadCoinsOnPage();
 
 
-    // Add search event to searchbox
+    // Add search event to searchbox and searchtype selector
     document.getElementById("searchBox").addEventListener("keyup", searchCoins);
+    document.getElementById("searchType").addEventListener("change", searchCoins);
 
     // Show home frame on load
     homeFrameObj.style.display="grid";
@@ -143,17 +144,22 @@
         this.previousElementSibling.innerHTML = extraInfo;
     }
 
-    // Search for coins based on user's input in the searchBox
+    // Search for coins based on user's input in the searchBox and searchType chosen
     function searchCoins() {
         // Save searchTerm from searchBox and convert to lowerCase to increase compatibility
         let searchTerm = document.getElementById("searchBox").value.toLowerCase();
+
+        // Save searchType chosen from select box
+        let searchType = document.getElementById("searchType").value;
 
         // If search term is empty, display all coins
         if (searchTerm === "") displayCoins(coins.values(), homeFrameObj);
         // Otherwise filter by search term, creating new map from filtered array checking if the symbol contains the search term (per specification request)
         else {
             const filteredCoins = new Map(Array.from(coins).filter(([key,value]) => {
-                if (value.symbol.includes(searchTerm)) return true;
+                // Check the property of the coin being checked based on the searchType (using eval to prevent code duplication and unnecessary conditions) to see if includes searchTerm
+                if (eval(`value.${searchType}.toLowerCase().includes(searchTerm)`))
+                    return true;
                 return false;
             }));
             // Display only filtered coins to user

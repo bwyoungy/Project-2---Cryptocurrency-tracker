@@ -8,9 +8,13 @@ section {
     display: none;
 }
 
-img {
+.coinImage {
     height: 50px;
     width: 50px;
+}
+
+#myImage {
+    height: 350px;
 }
 
 /* Display coins using grid, limiting to 5 per row */

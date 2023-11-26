@@ -105,7 +105,7 @@
             <span class="glyphicon glyphicon-star"></span>
             <span>${coin.name}</span><br>
             <span>Symbol: ${coin.symbol}</span><br>
-            <img src="${coin.image.small}" alt="Image of ${coin.name}"><br>
+            <img src="${coin.image.small}" alt="Image of ${coin.name}" class="coinImage"><br>
             <span></span>
             <button class="moreInfoBtn">More Info</button>
         </div>`;

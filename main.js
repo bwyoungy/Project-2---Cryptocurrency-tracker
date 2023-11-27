@@ -34,15 +34,22 @@
 
     // Load coins on page, from API or localstorage
     function loadCoinsOnPage() {
-        // If coins null or empty, get info from API
-        if (coins === null || coins.size === 0) loadCoinsFromAPI();
-
-        // Load coins from localStorage and parse from JSON
-        fillCoinsMap(JSON.parse(localStorage.getItem("coinsJSON")));
+        // parse coins from JSON from localStorage
+        let coinsJSON = JSON.parse(localStorage.getItem("coinsJSON"));
+        
+        // If localStorage is null, get info from API and display appropriate message
+        if (coinsJSON === null) {
+            loadCoinsFromAPI();
+            homeFrameObj.innerHTML = "Coin information isn't available right now. Our team of cryptomonkeys are working on it. In the meantime you can explore our about section and learn about this website and its creator. Try refreshing or returning to this page in a minute or so and hopefully the information will be here by then.";
+        }
+        else {
+        // Load coins from localStorage
+        fillCoinsMap(coinsJSON);
 
         // Display all coins
         displayCoins(coins.values(), homeFrameObj);
     }
+}
 
     // Asynchronical function which loads the coin information from the CoinGecko API
     async function loadCoinsFromAPI() {

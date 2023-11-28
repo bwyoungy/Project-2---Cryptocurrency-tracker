@@ -59,6 +59,9 @@
             const coinsAPI = await response.json();
             // Save coins in localStorage as JSON
             localStorage.setItem("coinsJSON", JSON.stringify(coinsAPI));
+            
+            // Display all coins
+            displayCoins(coinsAPI, homeFrameObj);
 
         } catch (error) {
             // Alert user there was a problem retrieving the information
@@ -221,6 +224,34 @@
             }
         }
 
+        // Update favourite coins on marquee
+        displayFaveCoinsMarquee();
+
+    }
+
+    // Shows favourite coins on marquee
+    function displayFaveCoinsMarquee() {
+        // Initialize html to display on marquee
+        let marqueeHTML = "";
+
+        // Check if there are coins favourited
+        // If there aren't, display welcome to site message
+        if (faveCoins.length === 0) marqueeHTML = "Welcome to the Cryptocurrency tracker!";
+        // Otherwise, display favourite coins
+        else {
+            marqueeHTML += "Favourites: "
+            // Iterate over faveCoins (id of coins favourited)
+            for (const id of faveCoins) {
+                // Add to marquee the symbol of the coin, by getting the coin from the coins map
+                marqueeHTML += coins.get(id).symbol + ", ";
+            }
+
+            // Remove last comma and space for display
+            marqueeHTML = marqueeHTML.slice(0,-2);
+        }
+
+        // Set marquee text on page
+        document.getElementById("siteMarquee").innerHTML = marqueeHTML;
     }
 
     // Pops up a modal in which user can choose coin to be replaced by 6th coin clicked or can cancel

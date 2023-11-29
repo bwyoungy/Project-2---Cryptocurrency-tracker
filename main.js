@@ -242,8 +242,10 @@
             marqueeHTML += "Favourites: "
             // Iterate over faveCoins (id of coins favourited)
             for (const id of faveCoins) {
-                // Add to marquee the symbol of the coin, by getting the coin from the coins map
-                marqueeHTML += coins.get(id).symbol + ", ";
+                // Getting the coin from the coins map
+                let coinById = coins.get(id);
+                // Add to marquee the symbol and price of the coin
+                marqueeHTML += `${coinById.symbol} $${coinById.market_data.current_price.usd.toFixed(2)}, `;
             }
 
             // Remove last comma and space for display

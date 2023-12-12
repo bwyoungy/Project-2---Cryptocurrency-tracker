@@ -2,12 +2,14 @@
 (()=>{ 
     "use strict"
 
-    // Initialise global variable as a map to hold coins
+    /* Initialise global variables all coins, faveCoins, and data for report */
     let coins = new Map();
     let faveCoins = [];
+    let reportData = new Map();
 
-    // Save variables of objects from DOM used a few times to lower times DOM is accessed
+    /* Save variables of objects from DOM used a few times to lower times DOM is accessed */
     const homeFrameObj = document.getElementById("homeFrame");
+    const reportFrameObj = document.getElementById("reportFrame");
 
     loadCoinsOnPage();
 
@@ -27,6 +29,10 @@
             for (const frame of document.getElementsByClassName("frame")) {
                 frame.style.display="none";
             }
+            
+            // If the report frame was clicked, load the report data
+            if (aLink.dataset.frame === "reportFrame") loadReport();
+            
             // Show the frame based on the link clicked (alink data-frame corresponds to section id)
             document.getElementById(this.dataset.frame).style.display="grid";
         });
@@ -287,4 +293,89 @@
         displayCoins(faveCoinsMap.values(), document.getElementById("modalFavouriteCoins"));
     }
 
+    // Loads information for coins report
+    async function loadReport() {
+        // Check if there are no favourite coins and display appropriate message if so
+        if (faveCoins.length === 0) reportFrameObj.innerHTML = "There are no favourite coins selected. Go back to home page and favourite some coins so we can show the report for them.";
+        // If there is no info in report data, get info from API and display appropriate message
+        else {
+            reportFrameObj.innerHTML = "Loading report data from CoinGecko...";
+            
+            await loadReportDataFromAPI();
+
+            drawReport();
+        }
+    }
+
+    // Asynchronical function which loads the coin information from the CoinGecko API
+    async function loadReportDataFromAPI() {
+        try {
+            
+            // Iterate over favourite coins
+            for (const coinID of faveCoins) {
+                // Fetch report data for coin from API
+                const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinID}/market_chart?vs_currency=usd&days=20&interval=daily&precision=2`);
+                const coinsDataJSON = await response.json();
+                
+                // Add new object to reportData map, containing coinID and the prices
+                reportData.set(coinID, coinsDataJSON.prices);
+            }
+        } catch (error) {
+            // Alert user there was a problem retrieving the information
+            alert("There was an error retrieving the information from the CoinGecko API. Please try reloading the page or reach out to us.");
+        }
+    }
+
+    // Function which draws the coins report
+    function drawReport() {
+        reportFrameObj.innerHTML = `<canvas id="reportCanvas" style="width:100%;max-width:700px"></canvas>`
+
+        // Initialise empty array for values of days which will be the x-axis of the chart
+        const dayValues = [];
+
+        // Initialise empty array for values of coins which will be the y-axis of the chart
+        // this will be an array of objects, each one containing "label" (coinID), "data" (array of coin Values per day), "borderColor", and "fill"
+        const coinValues = [];
+
+        // Initialise an array of colours for the different line colours (5 maximum)
+        const lineColours = ["red", "green", "blue", "purple", "orange"];
+        // Initialise counter for colours
+        let colourCount = 0;
+
+        // Iterate over the data in the first map entry (there's always at least one by this point) to save day data for x-axis
+        for (const data of reportData.values().next().value) {
+            // Convert data (saved in milliseconds) to a date
+            let dataDate = new Date(data[0]);
+            // Save to x-axis array the format to display to the user: a string with the day of the month and the short form of the month
+            dayValues.push(dataDate.getDate() + " " + dataDate.toLocaleString('default', { month: 'short' }));
+        }
+
+        // Iterate over reportData map and save coin values to array in objects for y-axis
+        for (const [coinID, data] of reportData) {
+            // Initialise empty array to save daily coin values
+            let dataValues = [];
+            // Iterate over daily data and save the daily coin data to use for y-axis
+            for (const dayData of data) dataValues.push(dayData[1]);
+
+            // Add to coin values the daily data for current coin iterated
+            coinValues.push({
+                label: `${coins.get(coinID).name} (${coins.get(coinID).symbol})`,
+                data: dataValues,
+                borderColor: lineColours[colourCount++], // choose current colour and advance counter
+                fill: false
+            });
+        }
+
+        // Draw the chart
+        new Chart("reportCanvas", {
+            type: "line",
+            data: {
+                labels: dayValues,
+                datasets: coinValues
+            },
+            options: {
+                legend: {display: true}
+            }
+        });
+    }
 })()

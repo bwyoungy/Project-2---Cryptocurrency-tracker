@@ -310,6 +310,9 @@
     // Asynchronical function which loads the coin information from the CoinGecko API
     async function loadReportDataFromAPI() {
         try {
+        
+            // Empty reportData map as we want only current favourite coins and not information which might've stayed from previous use
+            reportData.clear();
             
             // Iterate over favourite coins
             for (const coinID of faveCoins) {

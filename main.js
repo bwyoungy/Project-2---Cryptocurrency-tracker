@@ -319,6 +319,7 @@
 
             document.getElementById("reportArea").style.display="none";
 
+            // Create chart object - as we will update the data and redraw we need to use the same object throughout (also send it to called functions as a parameter)
             let chart = new Chart("reportCanvas", {type: "line", options: {legend: {display:true}}});
     
             // Bind event to draw report to change of value in selected period
@@ -328,12 +329,16 @@
         }
     }
 
+    // Load the data for the report from CryptoCompare API
     async function loadReportData(chart) {
         await loadReportDataFromAPI();
-        // If we have information in reportdata, draw the report (to avoid situations users picked)
+        // If we have information in reportdata, draw the report (to avoid situations user picked only coins which CryptoCompare API doesn't have info for)
         if (reportData.size > 0) {
             drawReport(chart);
+            
+            // Hide loading message
             document.getElementById("reportLoadMsg").style.display="none";
+            // Show report
             document.getElementById("reportArea").style.display="block";
         }
         // Display message to user to explain why report hasn't loaded
@@ -342,8 +347,7 @@
 
     // Asynchronical function which loads the coin information from the CryptoCompare API
     async function loadReportDataFromAPI() {
-        try {
-        
+        try {        
             // Empty reportData map as we want only current favourite coins and not information which might've stayed from previous use
             reportData.clear();
             
@@ -353,7 +357,7 @@
                 const response = await fetch(`https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coins.get(coinID).symbol}&tsym=usd&limit=${document.getElementById("reportPeriod").value}`);
                 const coinsDataJSON = await response.json();
                 
-                // Check that we recieved a response, in case of mismatch between the 2 APIS (for example: mnt & tao don't exist in cryptocompare)
+                // Check that we recieved a response, in case of mismatch between the 2 APIS (for example: mnt & tao don't exist in CryptoCompare)
                 // and add new object to reportData map, containing coinID and the prices
                 if (coinsDataJSON.Response === "Success") reportData.set(coinID, coinsDataJSON.Data.Data);
             }
@@ -390,7 +394,7 @@
         for (const [coinID, data] of reportData) {
             // Initialise empty array to save daily coin values
             let dataValues = [];
-            // Iterate over daily data and save the daily coin data to use for y-axis
+            // Iterate over daily data and save the daily coin data (end of day close value) to use for y-axis
             for (const dayData of data) dataValues.push(dayData.close);
 
             // Add to coin values the daily data for current coin iterated
@@ -402,7 +406,7 @@
             });
         }
 
-        // Update 
+        // Update data for chart
         chart.data.labels = dayValues;
         chart.data.datasets = coinValues;
         chart.update();

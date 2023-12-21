@@ -31,7 +31,7 @@
             }
             
             // If the report frame was clicked, load the report data
-            if (aLink.dataset.frame === "reportFrame") loadReport();
+            if (aLink.dataset.frame === "reportFrame") loadReportFrame();
             
             // Show the frame based on the link clicked (alink data-frame corresponds to section id)
             document.getElementById(this.dataset.frame).style.display="grid";
@@ -294,20 +294,53 @@
     }
 
     // Loads information for coins report
-    async function loadReport() {
+    async function loadReportFrame() {
         // Check if there are no favourite coins and display appropriate message if so
         if (faveCoins.length === 0) reportFrameObj.innerHTML = "There are no favourite coins selected. Go back to home page and favourite some coins so we can show the report for them.";
         // If there is no info in report data, get info from API and display appropriate message
         else {
-            reportFrameObj.innerHTML = "Loading report data from CoinGecko...";
+            reportFrameObj.innerHTML = `<div id="reportLoadMsg">Loading report data from CryptoCompare...</div>`;
             
-            await loadReportDataFromAPI();
+            reportFrameObj.innerHTML += `
+            <div id="reportArea" display="none">
+                <canvas id="reportCanvas" style="width:100%;max-width:700px"></canvas>
+                <label for="reportPeriod">Time range for report:</label>
+                <select id="reportPeriod">
+                    <option value="7">1 week</option>
+                    <option value="14">2 weeks</option>
+                    <option value="30" selected>1 month</option>
+                    <option value="90">3 months</option>
+                    <option value="120">6 months</option>
+                    <option value="270">9 months</option>
+                    <option value="365">1 year</option>
+                </select>
+            </div>
+            `;
 
-            drawReport();
+            document.getElementById("reportArea").style.display="none";
+
+            let chart = new Chart("reportCanvas", {type: "line", options: {legend: {display:true}}});
+    
+            // Bind event to draw report to change of value in selected period
+            document.getElementById("reportPeriod").addEventListener("change", loadReportData.bind(document.getElementById("reportPeriod"), chart));
+
+            loadReportData(chart);
         }
     }
 
-    // Asynchronical function which loads the coin information from the CoinGecko API
+    async function loadReportData(chart) {
+        await loadReportDataFromAPI();
+        // If we have information in reportdata, draw the report (to avoid situations users picked)
+        if (reportData.size > 0) {
+            drawReport(chart);
+            document.getElementById("reportLoadMsg").style.display="none";
+            document.getElementById("reportArea").style.display="block";
+        }
+        // Display message to user to explain why report hasn't loaded
+        else document.getElementById("reportLoadMsg").innerText="The CryptoCompare API doesn't contain information for the coins favourited";
+    }
+
+    // Asynchronical function which loads the coin information from the CryptoCompare API
     async function loadReportDataFromAPI() {
         try {
         
@@ -317,22 +350,21 @@
             // Iterate over favourite coins
             for (const coinID of faveCoins) {
                 // Fetch report data for coin from API
-                const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinID}/market_chart?vs_currency=usd&days=20&interval=daily&precision=2`);
+                const response = await fetch(`https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coins.get(coinID).symbol}&tsym=usd&limit=${document.getElementById("reportPeriod").value}`);
                 const coinsDataJSON = await response.json();
                 
-                // Add new object to reportData map, containing coinID and the prices
-                reportData.set(coinID, coinsDataJSON.prices);
+                // Check that we recieved a response, in case of mismatch between the 2 APIS (for example: mnt & tao don't exist in cryptocompare)
+                // and add new object to reportData map, containing coinID and the prices
+                if (coinsDataJSON.Response === "Success") reportData.set(coinID, coinsDataJSON.Data.Data);
             }
         } catch (error) {
             // Alert user there was a problem retrieving the information
-            alert("There was an error retrieving the information from the CoinGecko API. Please try reloading the page or reach out to us.");
+            alert("There was an error retrieving the information from the CryptoCompare API. Please try reloading the page or reach out to us.");
         }
     }
 
     // Function which draws the coins report
-    function drawReport() {
-        reportFrameObj.innerHTML = `<canvas id="reportCanvas" style="width:100%;max-width:700px"></canvas>`
-
+    function drawReport(chart) {
         // Initialise empty array for values of days which will be the x-axis of the chart
         const dayValues = [];
 
@@ -348,7 +380,8 @@
         // Iterate over the data in the first map entry (there's always at least one by this point) to save day data for x-axis
         for (const data of reportData.values().next().value) {
             // Convert data (saved in milliseconds) to a date
-            let dataDate = new Date(data[0]);
+            let dataDate = new Date(data.time*1000);
+            
             // Save to x-axis array the format to display to the user: a string with the day of the month and the short form of the month
             dayValues.push(dataDate.getDate() + " " + dataDate.toLocaleString('default', { month: 'short' }));
         }
@@ -358,7 +391,7 @@
             // Initialise empty array to save daily coin values
             let dataValues = [];
             // Iterate over daily data and save the daily coin data to use for y-axis
-            for (const dayData of data) dataValues.push(dayData[1]);
+            for (const dayData of data) dataValues.push(dayData.close);
 
             // Add to coin values the daily data for current coin iterated
             coinValues.push({
@@ -369,16 +402,9 @@
             });
         }
 
-        // Draw the chart
-        new Chart("reportCanvas", {
-            type: "line",
-            data: {
-                labels: dayValues,
-                datasets: coinValues
-            },
-            options: {
-                legend: {display: true}
-            }
-        });
+        // Update 
+        chart.data.labels = dayValues;
+        chart.data.datasets = coinValues;
+        chart.update();
     }
 })()

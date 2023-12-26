@@ -1,6 +1,7 @@
 marquee {
     color: lightgreen;
     background-color: black;
+    position: fixed;
 }
 
 /* Have sections hidden at beginning */

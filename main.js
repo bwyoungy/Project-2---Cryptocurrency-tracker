@@ -338,6 +338,12 @@
                     <option value="270">9 months</option>
                     <option value="365">1 year</option>
                 </select>
+                <label for="reportCurrency">Currency for report:</label>
+                <select id="reportCurrency">
+                    <option value="usd" selected>US Dollar</option>
+                    <option value="eur">Euro</option>
+                    <option value="ils">New Israeli Shekel</option>
+                </select>
             </div>
             `;
 
@@ -346,8 +352,9 @@
             // Create chart object - as we will update the data and redraw we need to use the same object throughout (also send it to called functions as a parameter)
             let chart = new Chart("reportCanvas", {type: "line", options: {legend: {display:true}}});
     
-            // Bind event to draw report to change of value in selected period
+            // Bind event to draw report to change of value in selected period or currency
             document.getElementById("reportPeriod").addEventListener("change", loadReportData.bind(document.getElementById("reportPeriod"), chart));
+            document.getElementById("reportCurrency").addEventListener("change", loadReportData.bind(document.getElementById("reportCurrency"), chart));
 
             loadReportData(chart);
         }
@@ -377,8 +384,8 @@
             
             // Iterate over favourite coins
             for (const coinID of faveCoins) {
-                // Fetch report data for coin from API
-                const response = await fetch(`https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coins.get(coinID).symbol}&tsym=usd&limit=${document.getElementById("reportPeriod").value}`);
+                // Fetch report data for coin from API (with currency and range based on selection on HTML page)
+                const response = await fetch(`https://min-api.cryptocompare.com/data/v2/histoday?fsym=${coins.get(coinID).symbol}&tsym=${document.getElementById("reportCurrency").value}&limit=${document.getElementById("reportPeriod").value}`);
                 const coinsDataJSON = await response.json();
                 
                 // Check that we recieved a response, in case of mismatch between the 2 APIS (for example: mnt & tao don't exist in CryptoCompare)

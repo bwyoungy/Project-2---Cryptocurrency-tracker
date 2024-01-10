@@ -7,6 +7,12 @@
     let faveCoins = [];
     let reportData = new Map();
 
+    /* Initialise global variables to save exchange rate of USD and set default as 0 */
+    let exchangeUSDtoILS = 0;
+    let exchangeUSDtoEUR = 0;
+    // Get exchange rates from API
+    loadExchangeRatesFromAPI();
+
     /* Save variables of objects from DOM used a few times to lower times DOM is accessed */
     const homeFrameObj = document.getElementById("homeFrame");
     const reportFrameObj = document.getElementById("reportFrame");
@@ -38,6 +44,23 @@
         });
     }
 
+    // Asynchronical function which loads exchange rates from API
+    async function loadExchangeRatesFromAPI() {
+        try {
+            // Fetch exchange rates from API
+            const response = await fetch("https://api.frankfurter.app/latest?from=USD&to=EUR,ILS");
+            const ratesAPI = await response.json();
+
+            // Set exchange rates
+            exchangeUSDtoILS = ratesAPI.rates.ILS;
+            exchangeUSDtoEUR = ratesAPI.rates.EUR;
+
+        } catch (error) {
+            // Alert user there was a problem retrieving the information
+            alert("There was an error retrieving the information from the Exchange Rates API. Please try reloading the page or reach out to us.");
+        }
+    }
+
     // Load coins on page, from API or localstorage
     function loadCoinsOnPage() {
         // parse coins from JSON from localStorage
@@ -54,14 +77,14 @@
 
         // Display all coins
         displayCoins(coins.values(), homeFrameObj);
+        }
     }
-}
 
     // Asynchronical function which loads the coin information from the CoinGecko API
     async function loadCoinsFromAPI() {
         try {
             // Fetch coins from API and load the coins array with the json
-            const response = await fetch("https://api.coingecko.com/api/v3/coins/");
+            const response = await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd");
             const coinsAPI = await response.json();
             // Save coins in localStorage as JSON
             localStorage.setItem("coinsJSON", JSON.stringify(coinsAPI));
@@ -121,7 +144,7 @@
             <span class="glyphicon glyphicon-star"></span>
             <span>${coin.name}</span><br>
             <span>Symbol: ${coin.symbol}</span><br>
-            <img src="${coin.image.small}" alt="Image of ${coin.name}" class="coinImage"><br>
+            <img src="${coin.image}" alt="Image of ${coin.name}" class="coinImage"><br>
             <span></span>
             <button class="moreInfoBtn">More Info</button>
         </div>`;
@@ -140,14 +163,15 @@
             // Update text shown to opposite
             this.innerHTML = "Hide Info";
             
-            // For ease of code create variable saving the coins prices in different currencies (an object)
+            // For ease of code create variable saving the coin's prices in USD
             // The global coins map is accessed via the coin id we had saved in the dataset of the parent element when building the html
-            let coinPrice = coins.get(this.parentElement.dataset.coinid).market_data.current_price;
-            // Set extraInfo as coin price in USD, Euro, and Shekels (per specification request)
+            let coinUSDPrice = coins.get(this.parentElement.dataset.coinid).current_price;
+            // Set extraInfo as coin price in USD, Euro, and Shekels (per specification request).
+            // USD is per API data, Euro & Shekels calculated per exchange rate recieved from exchange rate API
             extraInfo = `Market value of coin:<br>
-            $${coinPrice.usd}<br>
-            €${coinPrice.eur}<br>
-            ₪${coinPrice.ils}<br>`
+            $${coinUSDPrice.toFixed(2)}<br>
+            €${(coinUSDPrice * exchangeUSDtoEUR).toFixed(2)}<br>
+            ₪${(coinUSDPrice * exchangeUSDtoILS).toFixed(2)}<br>`
             
         }
         // if text says "Hide Info", we want to collapse it (setting the text as empty which is the init, so no need to change in else cause)
@@ -251,7 +275,7 @@
                 // Getting the coin from the coins map
                 let coinById = coins.get(id);
                 // Add to marquee the symbol and price of the coin
-                marqueeHTML += `${coinById.symbol} $${coinById.market_data.current_price.usd.toFixed(2)}, `;
+                marqueeHTML += `${coinById.symbol} $${coinById.current_price.toFixed(2)}, `;
             }
 
             // Remove last comma and space for display

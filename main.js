@@ -13,12 +13,15 @@
     // Get exchange rates from API
     loadExchangeRatesFromAPI();
 
+    /* Initialise global variable for expiration time of coins data we fetched from API
+       (currently is one hour: 1000 ms * 60 seconds in a minute * 60 minutes in an hour) */
+    const coinsDataExpirationTime = 1000*60*60;
+
     /* Save variables of objects from DOM used a few times to lower times DOM is accessed */
     const homeFrameObj = document.getElementById("homeFrame");
     const reportFrameObj = document.getElementById("reportFrame");
 
     loadCoinsOnPage();
-
 
     // Add search event to searchbox and searchtype selector
     document.getElementById("searchBox").addEventListener("keyup", searchCoins);
@@ -44,6 +47,50 @@
         });
     }
 
+    // Function which saves information to localStorage as well as duration until expiry
+    // param key: The key by which the information will be saved to localStorage
+    // param value: The information to save
+    // param duration: The time (in milliseconds) until entry in localStorage will expire
+    function saveToLocalStorage(key, value, duration) {
+        // Get current DateTime
+        const now = new Date();
+        
+        // Create item to save to localStorage, consisting of the value and the expiry DateTime
+        const item = {
+            value: value,
+            expiry: now.getTime() + duration
+        };
+
+        // Save the item in localStorage
+        localStorage.setItem(key, JSON.stringify(item));
+    }
+
+    // Function which fetches information from localStorage, after checking if it's expired
+    // param key: The key by which the information is saved in localStorage
+    function fetchFromLocalStorage(key) {
+        // Get the data from localStorage based on key
+        const data = localStorage.getItem(key);
+
+        // Check if data was retrieved, otherwise return null
+        if (!data) return null;
+
+        // Parse the data to recieve a workable item
+        const item = JSON.parse(data);
+
+        // Get current DateTime
+        const now = new Date();
+
+        // Check if current DateTime is beyond expiry DateTime
+        // If it is remove the data from the localStorage and return null
+        if (now.getTime() > item.expiry) {
+            localStorage.removeItem(key);
+            return null;
+        }
+
+        // If data was retrieved and expiry DateTime has not passed, return the value
+        return item.value;
+    }
+    
     // Asynchronical function which loads exchange rates from API
     async function loadExchangeRatesFromAPI() {
         try {
@@ -61,22 +108,23 @@
         }
     }
 
-    // Load coins on page, from API or localstorage
+    // Load coins on page, from API or localStorage
     function loadCoinsOnPage() {
-        // parse coins from JSON from localStorage
-        let coinsJSON = JSON.parse(localStorage.getItem("coinsJSON"));
         
-        // If localStorage is null, get info from API and display appropriate message
-        if (coinsJSON === null) {
+        // fetch coins JSON from localStorage
+        let coinsJSON = fetchFromLocalStorage("coinsJSON");
+        
+        // If localStorage is null or undefined, get info from API and display appropriate message
+        if (coinsJSON === null || coinsJSON === undefined) {
             loadCoinsFromAPI();
             homeFrameObj.innerHTML = "Coin information isn't available right now. Our team of cryptomonkeys are working on it. In the meantime you can explore our about section and learn about this website and its creator. Try refreshing or returning to this page in a minute or so and hopefully the information will be here by then.";
         }
         else {
-        // Load coins from localStorage
-        fillCoinsMap(coinsJSON);
+            // Load coins from localStorage
+            fillCoinsMap(coinsJSON);
 
-        // Display all coins
-        displayCoins(coins.values(), homeFrameObj);
+            // Display all coins
+            displayCoins(coins.values(), homeFrameObj);
         }
     }
 
@@ -86,8 +134,8 @@
             // Fetch coins from API and load the coins array with the json
             const response = await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd");
             const coinsAPI = await response.json();
-            // Save coins in localStorage as JSON
-            localStorage.setItem("coinsJSON", JSON.stringify(coinsAPI));
+            // Save coins to localStorage
+            saveToLocalStorage("coinsJSON", coinsAPI, coinsDataExpirationTime);
             
             // Display all coins
             displayCoins(coinsAPI, homeFrameObj);
@@ -107,6 +155,7 @@
     }
 
     // Shows coins to the user
+    // param coinsToShow: A collection of the coins to show 
     // param objToDisplay: The object on which to print the coins
     function displayCoins(coinsToShow, objToDisplay) {
         // initialise html string as empty

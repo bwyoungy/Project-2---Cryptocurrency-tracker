@@ -137,8 +137,11 @@
             // Save coins to localStorage
             saveToLocalStorage("coinsJSON", coinsAPI, coinsDataExpirationTime);
             
+            // Load coins from localStorage
+            fillCoinsMap(coinsAPI);
+
             // Display all coins
-            displayCoins(coinsAPI, homeFrameObj);
+            displayCoins(coins.values(), homeFrameObj);
 
         } catch (error) {
             // Alert user there was a problem retrieving the information

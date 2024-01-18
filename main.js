@@ -117,7 +117,7 @@
         // If localStorage is null or undefined, get info from API and display appropriate message
         if (coinsJSON === null || coinsJSON === undefined) {
             loadCoinsFromAPI();
-            homeFrameObj.innerHTML = "Coin information isn't available right now. Our team of cryptomonkeys are working on it. In the meantime you can explore our about section and learn about this website and its creator. Try refreshing or returning to this page in a minute or so and hopefully the information will be here by then.";
+            homeFrameObj.innerHTML = `<div class="loader"></div>`;
         }
         else {
             // Load coins from localStorage
@@ -376,7 +376,7 @@
         if (faveCoins.length === 0) reportFrameObj.innerHTML = "There are no favourite coins selected. Go back to home page and favourite some coins so we can show the report for them.";
         // If there is no info in report data, get info from API and display appropriate message
         else {
-            reportFrameObj.innerHTML = `<div id="reportLoadMsg">Loading report data from CryptoCompare...</div>`;
+            reportFrameObj.innerHTML = `<div id="reportLoad" class="loader"></div>`;
             
             reportFrameObj.innerHTML += `
             <div id="reportArea" display="none">
@@ -416,17 +416,23 @@
     // Load the data for the report from CryptoCompare API
     async function loadReportData(chart) {
         await loadReportDataFromAPI();
+        
+        let reportLoadObj = document.getElementById("reportLoad");
+
         // If we have information in reportdata, draw the report (to avoid situations user picked only coins which CryptoCompare API doesn't have info for)
         if (reportData.size > 0) {
             drawReport(chart);
             
             // Hide loading message
-            document.getElementById("reportLoadMsg").style.display="none";
+            reportLoadObj.style.display="none";
             // Show report
             document.getElementById("reportArea").style.display="block";
         }
         // Display message to user to explain why report hasn't loaded
-        else document.getElementById("reportLoadMsg").innerText="The CryptoCompare API doesn't contain information for the coins favourited";
+        else {
+            reportLoadObj.innerText="The CryptoCompare API doesn't contain information for the coins favourited";
+            reportLoadObj.className="";
+        }
     }
 
     // Asynchronical function which loads the coin information from the CryptoCompare API

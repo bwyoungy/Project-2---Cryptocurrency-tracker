@@ -287,7 +287,8 @@
                 document.getElementById("replacementModal").style.display = "none";
 
                 // Display all coins again, otherwise will show old favourites not updated
-                displayCoins(coins.values(), homeFrameObj);
+                // Using searchCoins function, so if user was mid-search when modal popped-up, will continue showing search results and not all coins
+                searchCoins();
             }
         }
         else {

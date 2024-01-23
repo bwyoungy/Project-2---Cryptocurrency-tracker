@@ -28,6 +28,8 @@ section {
 
 .coinCard {
     border: solid black 1px;
+    /* Set background colour to work with background image */
+    background-color: rgba(240, 223, 155, 0.8);
 }
 
 .modal {
@@ -57,6 +59,17 @@ section {
     animation: spin 1.5s linear infinite;
     background-image: url("assets/images/loadCoin.jpg");
     background-size: cover;
+}
+
+.parallax {
+    /* Image for background */
+    background-image: url("assets/images/bitcoin-bg.webp");
+    min-height: 500px;
+    /* Create parallax scrolling effect */
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: repeat-x;
+    background-size: contain;
 }
 
 /* full circle rotation animation */

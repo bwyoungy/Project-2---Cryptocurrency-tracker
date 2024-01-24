@@ -7,6 +7,7 @@ marquee {
 #linksMenu {
     background-color: gold;
     position: fixed;
+    padding: 0 5px;
 }
 
 /* Have sections hidden at beginning */

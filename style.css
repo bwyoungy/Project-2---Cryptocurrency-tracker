@@ -5,9 +5,17 @@ marquee {
 }
 
 #linksMenu {
-    background-color: gold;
+    background-color: black;
     position: fixed;
     padding: 0 5px;
+}
+
+.frameLink {
+    color: lightgreen;
+}
+
+.frameLink:hover {
+    color: green;
 }
 
 /* Have sections hidden at beginning */

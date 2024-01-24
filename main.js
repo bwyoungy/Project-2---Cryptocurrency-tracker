@@ -397,6 +397,10 @@
                     <option value="eur">Euro</option>
                     <option value="ils">New Israeli Shekel</option>
                 </select>
+
+                <p>The report shows your favourite coins' values over a time range. You can change the time range or currency displayed using the selection boxes under the graph.</p>
+                <p>By clicking the coin or it's colour marker in the legend above the graph, you can toggle it's appearance in the report.</p>
+                <p>You can return to the home page to add or replace coins and return to regenerate the report.</p>
             </div>
             `;
 

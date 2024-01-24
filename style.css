@@ -4,6 +4,11 @@ marquee {
     position: fixed;
 }
 
+#linksMenu {
+    background-color: gold;
+    position: fixed;
+}
+
 /* Have sections hidden at beginning */
 section {
     display: none;

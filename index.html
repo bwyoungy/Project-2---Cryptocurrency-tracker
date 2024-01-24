@@ -16,19 +16,21 @@
     <br>
     
     <!-- Links to navigate between sections of site -->
-    <a href="javascript:void(0)" data-frame="homeFrame" class="frameLink">* Home page</a>
-    <a href="javascript:void(0)" data-frame="reportFrame" class="frameLink">* Coins report</a>
-    <a href="javascript:void(0)" data-frame="aboutFrame" class="frameLink">* About</a>
-
+    <div id="linksMenu">
+        <a href="javascript:void(0)" data-frame="homeFrame" class="frameLink">* Home page</a>
+        <a href="javascript:void(0)" data-frame="reportFrame" class="frameLink">* Coins report</a>
+        <a href="javascript:void(0)" data-frame="aboutFrame" class="frameLink">* About</a>
+    </div>
+    <br>
     <!-- Search box to filter coins -->
-    <label for="searchBox">Search coin:</label>
-    <input type="search" id="searchBox">
-    <select id="searchType">
-        <option value="symbol">By symbol</option>
-        <option value="name">By name</option>
-    </select>
-
-    <hr>
+    <div id="searchBoxDiv">
+        <label for="searchBox">Search coin:</label>
+        <input type="search" id="searchBox">
+        <select id="searchType">
+            <option value="symbol">By symbol</option>
+            <option value="name">By name</option>
+        </select>
+    </div>
 
     <!-- The sections of the site  -->
     <section id="homeFrame" class="frame parallax"></section>

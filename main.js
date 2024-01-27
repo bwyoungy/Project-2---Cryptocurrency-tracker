@@ -20,12 +20,15 @@
     /* Save variables of objects from DOM used a few times to lower times DOM is accessed */
     const homeFrameObj = document.getElementById("homeFrame");
     const reportFrameObj = document.getElementById("reportFrame");
+    const searchBoxObj = document.getElementById("searchBox");
+    const searchTypeObj = document.getElementById("searchType");
 
     loadCoinsOnPage();
 
-    // Add search event to searchbox and searchtype selector
-    document.getElementById("searchBox").addEventListener("keyup", searchCoins);
-    document.getElementById("searchType").addEventListener("change", searchCoins);
+    // Add search event to searchbox, searchtype selector, and search reset
+    searchBoxObj.addEventListener("keyup", searchCoins);
+    searchTypeObj.addEventListener("change", searchCoins);
+    document.getElementById("resetSearch").addEventListener("click", resetSearch);
 
     // Show home frame on load
     homeFrameObj.style.display="grid";
@@ -236,13 +239,19 @@
         this.previousElementSibling.innerHTML = extraInfo;
     }
 
+    // Reset searchbox to empty and display all coins
+    function resetSearch() {
+        searchBoxObj.value = "";
+        displayCoins(coins.values(), homeFrameObj);
+    }
+
     // Search for coins based on user's input in the searchBox and searchType chosen
     function searchCoins() {
         // Save searchTerm from searchBox and convert to lowerCase to increase compatibility
-        let searchTerm = document.getElementById("searchBox").value.toLowerCase();
+        let searchTerm = searchBoxObj.value.toLowerCase();
 
         // Save searchType chosen from select box
-        let searchType = document.getElementById("searchType").value;
+        let searchType = searchTypeObj.value;
 
         // If search term is empty, display all coins
         if (searchTerm === "") displayCoins(coins.values(), homeFrameObj);
@@ -257,7 +266,6 @@
             // Display only filtered coins to user
             displayCoins(filteredCoins.values(), homeFrameObj);
         }
-
     }
 
     // Adds coin to array of favourites

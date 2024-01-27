@@ -222,7 +222,7 @@
             // The global coins map is accessed via the coin id we had saved in the dataset of the parent element when building the html
             let coinUSDPrice = coins.get(this.parentElement.dataset.coinid).current_price;
             // Set extraInfo as coin price in USD, Euro, and Shekels (per specification request).
-            // USD is per API data, Euro & Shekels calculated per exchange rate recieved from exchange rate API
+            // USD is per CoinGecko API data, Euro & Shekels calculated per exchange rate recieved from exchange rate API
             extraInfo = `Market value of coin:<br>
             $${coinUSDPrice.toFixed(2)}<br>
             €${(coinUSDPrice * exchangeUSDtoEUR).toFixed(2)}<br>

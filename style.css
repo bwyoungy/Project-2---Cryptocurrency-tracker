@@ -43,7 +43,6 @@ section {
 
 .coinCard {
     border: solid black 1px;
-    /* Set background colour to work with background image */
     background-color: rgba(200, 200, 200, 0.8);
 }
 

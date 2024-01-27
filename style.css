@@ -29,7 +29,8 @@ section {
 }
 
 #myImage {
-    height: 350px;
+    height: 400px;
+    padding-left: 25%;
 }
 
 /* Display coins using grid, limiting to 5 per row */

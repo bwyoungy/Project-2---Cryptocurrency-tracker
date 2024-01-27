@@ -43,7 +43,7 @@ section {
 .coinCard {
     border: solid black 1px;
     /* Set background colour to work with background image */
-    background-color: rgba(240, 223, 155, 0.8);
+    background-color: rgba(200, 200, 200, 0.8);
 }
 
 .modal {
@@ -77,13 +77,12 @@ section {
 
 .parallax {
     /* Image for background */
-    background-image: url("assets/images/bitcoin-bg.webp");
+    background-image: url("assets/images/mr-krabs-money.jpg");
     min-height: 500px;
     /* Create parallax scrolling effect */
     background-attachment: fixed;
     background-position: center;
-    background-repeat: repeat-x;
-    background-size: contain;
+    background-size: cover;
 }
 
 /* full circle rotation animation */
